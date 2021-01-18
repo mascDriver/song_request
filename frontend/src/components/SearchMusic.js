@@ -1,9 +1,6 @@
 import React, { Component } from "react";
 import {
-    Input,
     FormLabel,
-    Card,
-    Grid,
     ListItem,
     List,
     ListItemText,
@@ -38,7 +35,6 @@ export default class SearchMusic extends Component {
                 )
             })
         }
-
     }
     handleClose = (event, reason) => {
         if (reason === 'clickaway') {

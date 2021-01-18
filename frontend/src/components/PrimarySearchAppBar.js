@@ -14,6 +14,8 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
+import {FormLabel, Input, List, ListItem, ListItemText, TextField} from "@material-ui/core";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 
 const useStyles = makeStyles((theme) => ({
     grow: {
@@ -84,6 +86,7 @@ export default function PrimarySearchAppBar() {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
 
+    const [streamer, setStreamer] = React.useState([])
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
@@ -160,6 +163,18 @@ export default function PrimarySearchAppBar() {
             </MenuItem>
         </Menu>
     );
+    const handleChangeOption = (event, value) =>{
+        const requestOptions = {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        };
+        if (value !== '') {
+            fetch(`/api/search-streamer?streamer=${value}`, requestOptions).then(
+                (response) => response.json()).then(
+                (data) => {setStreamer(data)})
+        }
+        console.log(streamer)
+    }
 
     return (
         <div className={classes.grow}>
@@ -177,17 +192,33 @@ export default function PrimarySearchAppBar() {
                         SongRequest
                     </Typography>
                     <div className={classes.search}>
-                        <div className={classes.searchIcon}>
-                            <SearchIcon />
-                        </div>
-                        <InputBase
-                            placeholder="Search streamer"
-                            classes={{
-                                root: classes.inputRoot,
-                                input: classes.inputInput,
-                            }}
-                            inputProps={{ 'aria-label': 'search' }}
-                        />
+                        <FormLabel>
+                            <Autocomplete
+                                classes={{
+                                    root: classes.inputRoot,
+                                    input: classes.inputInput,
+                                }}
+                                freeSolo
+                                id="search-streamer"
+                                disableClearable
+                                onInputChange={handleChangeOption}
+                                options={streamer}
+                                getOptionLabel={(option) => option.stream_link}
+                                style={{ width: 500 }}
+                                renderInput={(params) =>
+                                    <TextField {...params} label="Search streamer" variant="outlined" />
+                                }
+                                renderOption={(option) => {
+                                    return (
+                                        <List >
+                                            <ListItem>
+                                                <ListItemText primary={option.stream_link} secondary={option.stream_link} />
+                                            </ListItem>
+                                        </List>
+                                    );
+                                }}
+                            />
+                        </FormLabel>
                     </div>
                     <div className={classes.grow} />
                     <div className={classes.sectionDesktop}>

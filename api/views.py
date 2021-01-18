@@ -1,5 +1,5 @@
 from rest_framework import generics, status
-from .serializers import RoomSerializer, CreateRoomSetializer, UpdateRoomSetializer
+from .serializers import RoomSerializer, CreateRoomSerializer, UpdateRoomSerializer
 from .models import Room
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -46,7 +46,7 @@ class JoinRoom(APIView):
 
 
 class CreateRoomView(APIView):
-    serializer_class = CreateRoomSetializer
+    serializer_class = CreateRoomSerializer
 
     def post(self, request, format=None):
         if not self.request.session.exists(self.request.session.session_key):
@@ -56,16 +56,19 @@ class CreateRoomView(APIView):
         if serializer.is_valid():
             guest_can_pause = serializer.data.get('guest_can_pause')
             votes_to_skip = serializer.data.get('votes_to_skip')
+            stream_link = serializer.data.get('stream_link')
             host = self.request.session.session_key
             queryset = Room.objects.filter(host=host)
             if queryset.exists():
                 room = queryset[0]
                 room.guest_can_pause = guest_can_pause
                 room.votes_to_skip = votes_to_skip
+                room.stream_link = stream_link
                 self.request.session['room_code'] = room.code
-                room.save(update_fields=['guest_can_pause', 'votes_to_skip'])
+                room.save(update_fields=['guest_can_pause', 'votes_to_skip', 'stream_link'])
             else:
-                room = Room(host=host, guest_can_pause=guest_can_pause, votes_to_skip=votes_to_skip)
+                room = Room(host=host, guest_can_pause=guest_can_pause, votes_to_skip=votes_to_skip,
+                            stream_link=stream_link)
                 room.save()
                 self.request.session['room_code'] = room.code
             return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
@@ -97,7 +100,7 @@ class LeaveRoom(APIView):
 
 
 class UpdateRoom(APIView):
-    serializer_class = UpdateRoomSetializer
+    serializer_class = UpdateRoomSerializer
 
     def patch(self, request):
         if not self.request.session.exists(self.request.session.session_key):
@@ -123,3 +126,18 @@ class UpdateRoom(APIView):
             room.save(update_fields=['guest_can_pause', 'votes_to_skip'])
             return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
         return Response({'Bad Request':'Invalid Data'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SearchStreamer(APIView):
+    def get(self, request):
+        streamer = request.GET.get('streamer')
+        rooms = Room.objects.filter(stream_link__icontains=streamer)
+        context = []
+        for room in rooms:
+            ctx = {
+                'stream_link': room.stream_link,
+                'code': room.code,
+                'created_at': room.created_at
+            }
+            context.append(ctx)
+        return Response(context, status=status.HTTP_200_OK)

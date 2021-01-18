@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import { Collapse } from "@material-ui/core";
+import {Collapse, Input} from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 
 export default class CreateRoomPage extends Component {
@@ -28,17 +28,25 @@ export default class CreateRoomPage extends Component {
       votesToSkip: this.props.votesToSkip,
       errorMsg: "",
       successMsg: "",
+      streamLink: ""
     };
 
     this.handleRoomButtonPressed = this.handleRoomButtonPressed.bind(this);
     this.handleVotesChange = this.handleVotesChange.bind(this);
     this.handleGuestCanPauseChange = this.handleGuestCanPauseChange.bind(this);
     this.handleUpdateButtonPressed = this.handleUpdateButtonPressed.bind(this);
+    this.handleLinkStream = this.handleLinkStream.bind(this)
   }
 
   handleVotesChange(e) {
     this.setState({
       votesToSkip: e.target.value,
+    });
+  }
+  handleLinkStream(e) {
+    console.log(e.target.value)
+    this.setState({
+      streamLink: e.target.value,
     });
   }
 
@@ -55,6 +63,7 @@ export default class CreateRoomPage extends Component {
       body: JSON.stringify({
         votes_to_skip: this.state.votesToSkip,
         guest_can_pause: this.state.guestCanPause,
+        stream_link: this.state.streamLink
       }),
     };
     fetch("/api/create-room", requestOptions)
@@ -184,6 +193,16 @@ export default class CreateRoomPage extends Component {
           <Grid item xs={12} align="center">
             <FormControl>
               <TextField
+                  onChange={this.handleLinkStream}
+                  placeholder="twitch.tv/mascDriver"
+                  label="Link da sua stream"
+                  labelPlacement="bottom"
+                  type="text"
+              />
+              <FormHelperText>
+                <div align="center">Digite o link da sua stream igual o exemplo</div>
+              </FormHelperText>
+              <TextField
                   required={true}
                   type="number"
                   onChange={this.handleVotesChange}
@@ -194,7 +213,7 @@ export default class CreateRoomPage extends Component {
                   }}
               />
               <FormHelperText>
-                <div align="center">Votos pra poder pular</div>
+                <div align="center">Quantidade de votos para pular musica</div>
               </FormHelperText>
             </FormControl>
           </Grid>
