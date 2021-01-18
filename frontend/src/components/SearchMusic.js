@@ -70,8 +70,8 @@ export default class SearchMusic extends Component {
                     options={this.tale}
                     getOptionLabel={(option) => option.title}
                     onChange={this.handleClick}
-                    style={{ width: 300 }}
-                    renderInput={(params) => <TextField {...params} label="Search" variant="outlined" />}
+                    style={{ width: 800, padding: 10 }}
+                    renderInput={(params) => <TextField {...params} label="Search music" variant="outlined" />}
                     renderOption={(option) => {
 
                         return (
