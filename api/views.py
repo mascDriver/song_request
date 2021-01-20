@@ -1,6 +1,6 @@
 from rest_framework import generics, status
 from .serializers import RoomSerializer, CreateRoomSerializer, UpdateRoomSerializer
-from .models import Room
+from .models import Room, UsersRoom
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -34,12 +34,21 @@ class JoinRoom(APIView):
         if not self.request.session.exists(self.request.session.session_key):
             self.request.session.create()
         code = request.data.get(self.lookup_url_kwargs)
-
-        if code != None:
+        name = request.data.get('name')
+        host = self.request.session.session_key
+        print(request.data)
+        if code is not None:
             room_result = Room.objects.filter(code=code)
             if len(room_result) > 0:
                 room = room_result[0]
                 self.request.session['room_code'] = code
+                if UsersRoom.objects.filter(room=room, host=host).exists():
+                    user_in_room = UsersRoom.objects.get(room=room)
+                    user_in_room.name = name
+                    user_in_room.save(update_fields=['name'])
+                else:
+                    user_in_room = UsersRoom(room=room, name=name, host=host)
+                    user_in_room.save()
                 return Response({'message': 'Room Joined"'}, status=status.HTTP_200_OK)
             return Response({'Bad Request': 'Invalid room code'}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'Bad Request': 'Invalid post data'}, status=status.HTTP_400_BAD_REQUEST)
@@ -57,18 +66,21 @@ class CreateRoomView(APIView):
             guest_can_pause = serializer.data.get('guest_can_pause')
             votes_to_skip = serializer.data.get('votes_to_skip')
             stream_link = serializer.data.get('stream_link')
+            public = serializer.data.get('public')
             host = self.request.session.session_key
             queryset = Room.objects.filter(host=host)
+            queryset_old = Room.objects.exclude(host=host)
+            queryset_old.delete()
             if queryset.exists():
                 room = queryset[0]
                 room.guest_can_pause = guest_can_pause
                 room.votes_to_skip = votes_to_skip
                 room.stream_link = stream_link
                 self.request.session['room_code'] = room.code
-                room.save(update_fields=['guest_can_pause', 'votes_to_skip', 'stream_link'])
+                room.save(update_fields=['guest_can_pause', 'votes_to_skip', 'stream_link', 'public'])
             else:
                 room = Room(host=host, guest_can_pause=guest_can_pause, votes_to_skip=votes_to_skip,
-                            stream_link=stream_link)
+                            stream_link=stream_link, public=public)
                 room.save()
                 self.request.session['room_code'] = room.code
             return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
@@ -131,7 +143,7 @@ class UpdateRoom(APIView):
 class SearchStreamer(APIView):
     def get(self, request):
         streamer = request.GET.get('streamer')
-        rooms = Room.objects.filter(stream_link__icontains=streamer)
+        rooms = Room.objects.filter(stream_link__icontains=streamer, public=False)
         context = []
         for room in rooms:
             ctx = {

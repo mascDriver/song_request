@@ -9,8 +9,9 @@ import { Link } from "react-router-dom";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import {Collapse, Input} from "@material-ui/core";
+import {Checkbox, Collapse, Input} from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
+import {CheckBox} from "@material-ui/icons";
 
 export default class CreateRoomPage extends Component {
   static defaultProps = {
@@ -28,7 +29,8 @@ export default class CreateRoomPage extends Component {
       votesToSkip: this.props.votesToSkip,
       errorMsg: "",
       successMsg: "",
-      streamLink: ""
+      streamLink: "",
+      public: true
     };
 
     this.handleRoomButtonPressed = this.handleRoomButtonPressed.bind(this);
@@ -44,7 +46,6 @@ export default class CreateRoomPage extends Component {
     });
   }
   handleLinkStream(e) {
-    console.log(e.target.value)
     this.setState({
       streamLink: e.target.value,
     });
@@ -55,7 +56,12 @@ export default class CreateRoomPage extends Component {
       guestCanPause: e.target.value === "true" ? true : false,
     });
   }
-
+  handleChangeCheck(e) {
+    console.log(e)
+    this.setState({
+      public: e.target.value === "true" ? true : false,
+    });
+  }
   handleRoomButtonPressed() {
     const requestOptions = {
       method: "POST",
@@ -63,7 +69,8 @@ export default class CreateRoomPage extends Component {
       body: JSON.stringify({
         votes_to_skip: this.state.votesToSkip,
         guest_can_pause: this.state.guestCanPause,
-        stream_link: this.state.streamLink
+        stream_link: this.state.streamLink,
+        public: this.state.public
       }),
     };
     fetch("/api/create-room", requestOptions)
@@ -214,6 +221,15 @@ export default class CreateRoomPage extends Component {
               />
               <FormHelperText>
                 <div align="center">Quantidade de votos para pular musica</div>
+              </FormHelperText>
+              <Checkbox
+                  defaultChecked
+                  color="secondary"
+                  inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  onClick={this.handleChangeCheck}
+              />
+              <FormHelperText>
+                <div align="center">Essa sala é publica para pesquisa?</div>
               </FormHelperText>
             </FormControl>
           </Grid>

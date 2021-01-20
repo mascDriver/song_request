@@ -14,8 +14,9 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
-import {FormLabel, Input, List, ListItem, ListItemText, TextField} from "@material-ui/core";
+import {FormLabel, Input, Link, List, ListItem, ListItemText, TextField} from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
+import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
     grow: {
@@ -85,10 +86,10 @@ export default function PrimarySearchAppBar() {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-
     const [streamer, setStreamer] = React.useState([])
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+    let history = useHistory();
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -173,7 +174,10 @@ export default function PrimarySearchAppBar() {
                 (response) => response.json()).then(
                 (data) => {setStreamer(data)})
         }
-        console.log(streamer)
+    }
+    const handleClickStreamer = (event, value) =>{
+        console.log(value)
+
     }
 
     return (
@@ -202,6 +206,7 @@ export default function PrimarySearchAppBar() {
                                 id="search-streamer"
                                 disableClearable
                                 onInputChange={handleChangeOption}
+                                onChange={(event, value)=> history.push(`/room/${value.code}`)}
                                 options={streamer}
                                 getOptionLabel={(option) => option.stream_link}
                                 style={{ width: 500 }}

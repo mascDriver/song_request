@@ -7,10 +7,12 @@ export default class RoomJoinPage extends Component {
     super(props);
     this.state = {
       roomCode: "",
+      name: "",
       error: ""
     }
     this.handleTextFieldChange = this.handleTextFieldChange.bind(this)
     this.roomButtonPressed = this.roomButtonPressed.bind(this)
+    this.handleTextFieldChangeName = this.handleTextFieldChangeName.bind(this)
   }
 
   render() {
@@ -22,8 +24,10 @@ export default class RoomJoinPage extends Component {
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">
-            <TextField error={this.state.error} label="Code" placeholder="Enter a Room Code" value={this.state.roomCode}
+            <TextField error={this.state.error}  placeholder="Digite o código da sala" value={this.state.roomCode}
                        helperText={this.state.error} variant="outlined" onChange={this.handleTextFieldChange}/>
+            <TextField error={this.state.error}  placeholder="Qual seu nome?"
+                       helperText={this.state.error} variant="outlined" onChange={this.handleTextFieldChangeName}/>
           </Grid>
           <Grid item xs={12} align="center">
             <Button variant="contained" color="primary" onClick={this.roomButtonPressed}>Entrar</Button>
@@ -39,12 +43,18 @@ export default class RoomJoinPage extends Component {
       roomCode: e.target.value
     })
   }
+  handleTextFieldChangeName(e){
+    this.setState({
+      name: e.target.value
+    })
+  }
   roomButtonPressed(e){
     const requestOptions = {
         method: 'POST',
         headers: {"Content-Type": "application/json"},
         body : JSON.stringify({
-            code: this.state.roomCode
+            code: this.state.roomCode,
+            name: this.state.name
         })
     }
     fetch('/api/join-room', requestOptions).then((response) => {
